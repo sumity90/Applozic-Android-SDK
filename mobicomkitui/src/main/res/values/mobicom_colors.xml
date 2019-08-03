@@ -71,4 +71,10 @@
     <color name="apploizc_custom_channel_message_text_color">#cccccc</color>
     <color name="apploizc_reply_sent_message_bg_color">#C0C0C0</color>
     <color name="apploizc_reply_received_message_bg_color">#F5F5F5</color>
+
+
+    <!--Custom Chat Color-->
+    <color name="bg_color_chat">#373a43</color>
+    <color name="bg_card_color">#5a5d66</color>
+    <color name="bg_green_color">#78ac00</color>
 </resources>

@@ -4,7 +4,7 @@ apply plugin: 'io.fabric'
 ext{
     defaultCompileSdkVersion = 27
     defaultTargetSdkVersion = 27
-    defaultBuildToolVersion = "27.0.3"
+    defaultBuildToolVersion = "28.0.3"
     defaultSupportLibVersion = "27.1.1"
 }
 

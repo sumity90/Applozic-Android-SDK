@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.SpannableString;
@@ -21,6 +22,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.applozic.mobicomkit.api.account.user.MobiComUserPreference;
@@ -419,6 +421,8 @@ public class QuickConversationAdapter extends RecyclerView.Adapter implements Fi
         final ImageView attachmentIcon;
         TextView unReadCountTextView;
         TextView smTime;
+        CardView cvItem;
+        RelativeLayout rlItem;
 
         public Myholder(View itemView) {
             super(itemView);
@@ -434,7 +438,11 @@ public class QuickConversationAdapter extends RecyclerView.Adapter implements Fi
             attachmentIcon = (ImageView) itemView.findViewById(R.id.attachmentIcon);
             unReadCountTextView = (TextView) itemView.findViewById(R.id.unreadSmsCount);
             smTime = (TextView) itemView.findViewById(R.id.smTime);
+            cvItem = (CardView) itemView.findViewById(R.id.cvItem);
+            rlItem =  itemView.findViewById(R.id.rlItem);
             itemView.setOnClickListener(this);
+            cvItem.setOnClickListener(this);
+            rlItem.setOnClickListener(this);
             itemView.setOnCreateContextMenuListener(this);
         }
 

@@ -131,7 +131,8 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
         View list = inflater.inflate(R.layout.mobicom_message_list, container, false);
 
         recyclerView = (RecyclerView) list.findViewById(R.id.messageList);
-        recyclerView.setBackgroundColor(getResources().getColor(R.color.conversation_list_all_background));
+       // recyclerView.setBackgroundColor(getResources().getColor(R.color.conversation_list_all_background)); // OLD
+        recyclerView.setBackgroundColor(getResources().getColor(R.color.bg_color_chat)); //Edit by Sumit
 
         if (messageList != null && !messageList.contains(null)) {
             messageList.add(null);
@@ -144,12 +145,14 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
         linearLayoutManager.setOrientation(AlLinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext());
+        //TODO Commented by Sumit
+       /*DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext());
         recyclerView.addItemDecoration(dividerItemDecoration);
+        */
         recyclerView.setAdapter(recyclerAdapter);
         //recyclerView.addItemDecoration(new FooterItemDecoration(getContext(), recyclerView, R.layout.mobicom_message_list_header_footer));
-        toolbar = (Toolbar) getActivity().findViewById(R.id.my_toolbar);
-        toolbar.setClickable(false);
+       /* toolbar = (Toolbar) getActivity().findViewById(R.id.my_toolbar);
+        toolbar.setClickable(false);*/
         fabButton = (ImageButton) list.findViewById(R.id.fab_start_new);
         loading = true;
         LinearLayout individualMessageSendLayout = (LinearLayout) list.findViewById(R.id.individual_message_send_layout);
@@ -172,21 +175,22 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
 
         //spinner = (ProgressBar) spinnerLayout.findViewById(R.id.spinner);
         emptyTextView = (TextView) list.findViewById(R.id.noConversations);
-        emptyTextView.setTextColor(Color.parseColor(alCustomizationSettings.getNoConversationLabelTextColor().trim()));
+        emptyTextView.setTextColor(getResources().getColor(R.color.bg_green_color));
+      //  emptyTextView.setTextColor(Color.parseColor(alCustomizationSettings.getNoConversationLabelTextColor().trim()));
 
         //startNewButton = (Button) spinnerLayout.findViewById(R.id.start_new_conversation);
 
         fabButton.setVisibility(alCustomizationSettings.isStartNewFloatingButton() ? View.VISIBLE : View.GONE);
 
         swipeLayout = (SwipeRefreshLayout) list.findViewById(R.id.swipe_container);
-        swipeLayout.setColorScheme(android.R.color.holo_blue_bright,
+        swipeLayout.setColorScheme(R.color.bg_green_color,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
 
         recyclerView.setLongClickable(true);
         registerForContextMenu(recyclerView);
-        ((CustomToolbarListener) getActivity()).setToolbarTitle(ApplozicService.getContext(getContext()).getString(R.string.conversation));
+     //   ((CustomToolbarListener) getActivity()).setToolbarTitle(ApplozicService.getContext(getContext()).getString(R.string.conversation));
 
         return list;
     }
@@ -205,7 +209,7 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
         super.onCreateOptionsMenu(menu, inflater);
 
 
-        if (alCustomizationSettings.isStartNewButton() || ApplozicSetting.getInstance(getContext()).isStartNewButtonVisible()) {
+      /*  if (alCustomizationSettings.isStartNewButton() || ApplozicSetting.getInstance(getContext()).isStartNewButtonVisible()) {
             menu.findItem(R.id.start_new).setVisible(true);
         }
         if (alCustomizationSettings.isStartNewGroup() || ApplozicSetting.getInstance(getContext()).isStartNewGroupButtonVisible()) {
@@ -228,7 +232,7 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
         }
         if (ALSpecificSettings.getInstance(getContext()).isTextLoggingEnabled() && (getContext() != null && 0 != (getContext().getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE))) {
             menu.findItem(R.id.sendTextLogs).setVisible(true);
-        }
+        }*/
     }
 
     public void addMessage(final Message message) {
@@ -519,8 +523,8 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
     @Override
     public void onResume() {
         //Assigning to avoid notification in case if quick conversation fragment is opened....
-        toolbar.setTitle(ApplozicService.getContext(getContext()).getResources().getString(R.string.chats));
-        toolbar.setSubtitle("");
+   //     toolbar.setTitle(ApplozicService.getContext(getContext()).getResources().getString(R.string.chats));
+   //     toolbar.setSubtitle("");
         BroadcastService.selectMobiComKitAll();
         super.onResume();
         if (recyclerView != null) {
@@ -778,21 +782,25 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
         }
 
         protected Long doInBackground(Void... voids) {
-            if (initial) {
-                nextMessageList = syncCallService.getLatestMessagesGroupByPeople(searchString, MobiComUserPreference.getInstance(ApplozicService.getContextFromWeak(context)).getParentGroupKey());
-                if (!nextMessageList.isEmpty()) {
-                    minCreatedAtTime = nextMessageList.get(nextMessageList.size() - 1).getCreatedAtTime();
+            try {
+                if (initial) {
+                    nextMessageList = syncCallService.getLatestMessagesGroupByPeople(searchString, MobiComUserPreference.getInstance(ApplozicService.getContextFromWeak(context)).getParentGroupKey());
+                    if (!nextMessageList.isEmpty()) {
+                        minCreatedAtTime = nextMessageList.get(nextMessageList.size() - 1).getCreatedAtTime();
+                    }
+                } else if (!messageList.isEmpty()) {
+                    listIndex = firstVisibleItem;
+                    Long createdAt;
+                    if (messageList.size() >= 2 && messageList.contains(null)) {
+                        createdAt = messageList.isEmpty() ? null : messageList.get(messageList.size() - 2).getCreatedAtTime();
+                    } else {
+                        createdAt = messageList.isEmpty() ? null : messageList.get(messageList.size() - 1).getCreatedAtTime();
+                    }
+                    minCreatedAtTime = (minCreatedAtTime == null ? createdAt : Math.min(minCreatedAtTime, createdAt));
+                    nextMessageList = syncCallService.getLatestMessagesGroupByPeople(minCreatedAtTime, searchString, MobiComUserPreference.getInstance(ApplozicService.getContextFromWeak(context)).getParentGroupKey());
                 }
-            } else if (!messageList.isEmpty()) {
-                listIndex = firstVisibleItem;
-                Long createdAt;
-                if (messageList.size() >= 2 && messageList.contains(null)) {
-                    createdAt = messageList.isEmpty() ? null : messageList.get(messageList.size() - 2).getCreatedAtTime();
-                } else {
-                    createdAt = messageList.isEmpty() ? null : messageList.get(messageList.size() - 1).getCreatedAtTime();
-                }
-                minCreatedAtTime = (minCreatedAtTime == null ? createdAt : Math.min(minCreatedAtTime, createdAt));
-                nextMessageList = syncCallService.getLatestMessagesGroupByPeople(minCreatedAtTime, searchString, MobiComUserPreference.getInstance(ApplozicService.getContextFromWeak(context)).getParentGroupKey());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             return 0L;
@@ -803,105 +811,109 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
         }
 
         protected void onPostExecute(Long result) {
-            if (!loadMoreMessages) {
-                if (swipeRefreshLayoutWeakReference != null) {
-                    final SwipeRefreshLayout swipeRefreshLayout = swipeRefreshLayoutWeakReference.get();
-                    if (swipeRefreshLayout != null) {
-                        swipeRefreshLayout.setEnabled(true);
-                        swipeRefreshLayout.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                swipeRefreshLayout.setRefreshing(false);
-                            }
-                        });
+            try {
+                if (!loadMoreMessages) {
+                    if (swipeRefreshLayoutWeakReference != null) {
+                        final SwipeRefreshLayout swipeRefreshLayout = swipeRefreshLayoutWeakReference.get();
+                        if (swipeRefreshLayout != null) {
+                            swipeRefreshLayout.setEnabled(true);
+                            swipeRefreshLayout.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    swipeRefreshLayout.setRefreshing(false);
+                                }
+                            });
+                        }
                     }
                 }
-            }
 
-            if (!loadMoreMessages) {
-                messageList.clear();
-                latestMessageForEachContact.clear();
-            }
+                if (!loadMoreMessages) {
+                    messageList.clear();
+                    latestMessageForEachContact.clear();
+                }
 
-            if (!TextUtils.isEmpty(searchString)) {
-                messageList.addAll(nextMessageList);
-            } else {
-                for (Message currentMessage : nextMessageList) {
-                    if (currentMessage.isSentToMany()) {
-                        continue;
-                    }
-                    Message recentSms;
-                    if (currentMessage.getGroupId() != null) {
-                        recentSms = latestMessageForEachContact.get(ConversationUIService.GROUP + currentMessage.getGroupId());
-                    } else {
-                        recentSms = latestMessageForEachContact.get(currentMessage.getContactIds());
-                    }
+                if (!TextUtils.isEmpty(searchString)) {
+                    messageList.addAll(nextMessageList);
+                } else {
+                    for (Message currentMessage : nextMessageList) {
+                        if (currentMessage.isSentToMany()) {
+                            continue;
+                        }
+                        Message recentSms;
+                        if (currentMessage.getGroupId() != null) {
+                            recentSms = latestMessageForEachContact.get(ConversationUIService.GROUP + currentMessage.getGroupId());
+                        } else {
+                            recentSms = latestMessageForEachContact.get(currentMessage.getContactIds());
+                        }
 
-                    if (recentSms != null) {
-                        if (currentMessage.getCreatedAtTime() >= recentSms.getCreatedAtTime()) {
+                        if (recentSms != null) {
+                            if (currentMessage.getCreatedAtTime() >= recentSms.getCreatedAtTime()) {
+                                if (currentMessage.getGroupId() != null) {
+                                    latestMessageForEachContact.put(ConversationUIService.GROUP + currentMessage.getGroupId(), currentMessage);
+                                } else {
+                                    latestMessageForEachContact.put(currentMessage.getContactIds(), currentMessage);
+                                }
+                                messageList.remove(recentSms);
+                                messageList.add(currentMessage);
+                            }
+                        } else {
                             if (currentMessage.getGroupId() != null) {
                                 latestMessageForEachContact.put(ConversationUIService.GROUP + currentMessage.getGroupId(), currentMessage);
                             } else {
                                 latestMessageForEachContact.put(currentMessage.getContactIds(), currentMessage);
                             }
-                            messageList.remove(recentSms);
+
                             messageList.add(currentMessage);
                         }
-                    } else {
-                        if (currentMessage.getGroupId() != null) {
-                            latestMessageForEachContact.put(ConversationUIService.GROUP + currentMessage.getGroupId(), currentMessage);
-                        } else {
-                            latestMessageForEachContact.put(currentMessage.getContactIds(), currentMessage);
-                        }
-
-                        messageList.add(currentMessage);
                     }
                 }
-            }
 
-            if (loadMoreMessages) {
-                if (messageList.contains(null)) {
-                    messageList.remove(null);
-                }
-                //progressBar.setVisibility(View.GONE);
-            }
-            if (quickConversationAdapterWeakReference != null && quickConversationAdapterWeakReference.get() != null) {
-                quickConversationAdapterWeakReference.get().notifyDataSetChanged();
-            }
-            if (initial) {
-                if (textViewWeakReference != null) {
-                    TextView emptyTextView = textViewWeakReference.get();
-                    if (emptyTextView != null) {
-                        emptyTextView.setVisibility(messageList.isEmpty() ? View.VISIBLE : View.GONE);
-                        if (!TextUtils.isEmpty(searchString) && messageList.isEmpty()) {
-                            emptyTextView.setText(!TextUtils.isEmpty(alCustomizationSettings.getNoSearchFoundForChatMessages()) ? alCustomizationSettings.getNoSearchFoundForChatMessages() : noConversationFound);
-                        } else if (TextUtils.isEmpty(searchString) && messageList.isEmpty()) {
-                            emptyTextView.setText(!TextUtils.isEmpty(alCustomizationSettings.getNoConversationLabel()) ? alCustomizationSettings.getNoConversationLabel() : conversationLabel);
-                        }
+                if (loadMoreMessages) {
+                    if (messageList.contains(null)) {
+                        messageList.remove(null);
                     }
+                    //progressBar.setVisibility(View.GONE);
                 }
-                if (!messageList.isEmpty()) {
-                    if (recyclerViewWr != null && recyclerViewWr.get() != null && quickConversationAdapterWeakReference != null) {
-                        QuickConversationAdapter adapter = quickConversationAdapterWeakReference.get();
-                        if (adapter != null) {
-                            if (adapter.getItemCount() > BroadcastService.lastIndexForChats) {
-                                recyclerViewWr.get().scrollToPosition(BroadcastService.lastIndexForChats);
-                                BroadcastService.lastIndexForChats = 0;
-                            } else {
-                                recyclerViewWr.get().scrollToPosition(0);
+                if (quickConversationAdapterWeakReference != null && quickConversationAdapterWeakReference.get() != null) {
+                    quickConversationAdapterWeakReference.get().notifyDataSetChanged();
+                }
+                if (initial) {
+                    if (textViewWeakReference != null) {
+                        TextView emptyTextView = textViewWeakReference.get();
+                        if (emptyTextView != null) {
+                            emptyTextView.setVisibility(messageList.isEmpty() ? View.VISIBLE : View.GONE);
+                            if (!TextUtils.isEmpty(searchString) && messageList.isEmpty()) {
+                                emptyTextView.setText(!TextUtils.isEmpty(alCustomizationSettings.getNoSearchFoundForChatMessages()) ? alCustomizationSettings.getNoSearchFoundForChatMessages() : noConversationFound);
+                            } else if (TextUtils.isEmpty(searchString) && messageList.isEmpty()) {
+                                emptyTextView.setText(!TextUtils.isEmpty(alCustomizationSettings.getNoConversationLabel()) ? alCustomizationSettings.getNoConversationLabel() : conversationLabel);
                             }
                         }
                     }
+                    if (!messageList.isEmpty()) {
+                        if (recyclerViewWr != null && recyclerViewWr.get() != null && quickConversationAdapterWeakReference != null) {
+                            QuickConversationAdapter adapter = quickConversationAdapterWeakReference.get();
+                            if (adapter != null) {
+                                if (adapter.getItemCount() > BroadcastService.lastIndexForChats) {
+                                    recyclerViewWr.get().scrollToPosition(BroadcastService.lastIndexForChats);
+                                    BroadcastService.lastIndexForChats = 0;
+                                } else {
+                                    recyclerViewWr.get().scrollToPosition(0);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (!loadMoreMessages && recyclerViewWr != null && recyclerViewWr.get() != null) {
+                        recyclerViewWr.get().scrollToPosition(firstVisibleItem);
+                    }
                 }
-            } else {
-                if (!loadMoreMessages && recyclerViewWr != null && recyclerViewWr.get() != null) {
-                    recyclerViewWr.get().scrollToPosition(firstVisibleItem);
+                if (!nextMessageList.isEmpty()) {
+                    loadMore = true;
                 }
+                isAlreadyLoading = false;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            if (!nextMessageList.isEmpty()) {
-                loadMore = true;
-            }
-            isAlreadyLoading = false;
         }
     }
 

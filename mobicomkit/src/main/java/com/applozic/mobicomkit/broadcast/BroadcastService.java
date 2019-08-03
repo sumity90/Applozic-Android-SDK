@@ -64,172 +64,236 @@ public class BroadcastService {
     }
 
     public static void sendFirstTimeSyncCompletedBroadcast(Context context) {
-        Utils.printLog(context, TAG, "Sending " + INTENT_ACTIONS.FIRST_TIME_SYNC_COMPLETE.toString() + " broadcast");
-        Intent intent = new Intent();
-        intent.setAction(INTENT_ACTIONS.FIRST_TIME_SYNC_COMPLETE.toString());
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        sendBroadcast(context, intent);
+        try {
+            Utils.printLog(context, TAG, "Sending " + INTENT_ACTIONS.FIRST_TIME_SYNC_COMPLETE.toString() + " broadcast");
+            Intent intent = new Intent();
+            intent.setAction(INTENT_ACTIONS.FIRST_TIME_SYNC_COMPLETE.toString());
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            sendBroadcast(context, intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void sendLoadMoreBroadcast(Context context, boolean loadMore) {
-        Utils.printLog(context, TAG, "Sending " + INTENT_ACTIONS.LOAD_MORE.toString() + " broadcast");
-        Intent intent = new Intent();
-        intent.setAction(INTENT_ACTIONS.LOAD_MORE.toString());
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        intent.putExtra("loadMore", loadMore);
-        sendBroadcast(context, intent);
+        try {
+            Utils.printLog(context, TAG, "Sending " + INTENT_ACTIONS.LOAD_MORE.toString() + " broadcast");
+            Intent intent = new Intent();
+            intent.setAction(INTENT_ACTIONS.LOAD_MORE.toString());
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            intent.putExtra("loadMore", loadMore);
+            sendBroadcast(context, intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void sendDeliveryReportForContactBroadcast(Context context, String action, String contactId) {
-        Utils.printLog(context, TAG, "Sending message delivery report of contact broadcast for " + action + ", " + contactId);
-        Intent intentUpdate = new Intent();
-        intentUpdate.setAction(action);
-        intentUpdate.addCategory(Intent.CATEGORY_DEFAULT);
-        intentUpdate.putExtra(MobiComKitConstants.CONTACT_ID, contactId);
-        sendBroadcast(context, intentUpdate);
+        try {
+            Utils.printLog(context, TAG, "Sending message delivery report of contact broadcast for " + action + ", " + contactId);
+            Intent intentUpdate = new Intent();
+            intentUpdate.setAction(action);
+            intentUpdate.addCategory(Intent.CATEGORY_DEFAULT);
+            intentUpdate.putExtra(MobiComKitConstants.CONTACT_ID, contactId);
+            sendBroadcast(context, intentUpdate);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void sendMessageUpdateBroadcast(Context context, String action, Message message) {
-        if (message.isActionMessage() && INTENT_ACTIONS.SYNC_MESSAGE.toString().equals(action) && ApplozicClient.getInstance(context).isActionMessagesHidden()) {
-            return;
-        }
+        try {
+            if (message.isActionMessage() && INTENT_ACTIONS.SYNC_MESSAGE.toString().equals(action) && ApplozicClient.getInstance(context).isActionMessagesHidden()) {
+                return;
+            }
 
-        Utils.printLog(context, TAG, "Sending message update broadcast for " + action + ", " + message.getKeyString());
-        Intent intentUpdate = new Intent();
-        intentUpdate.setAction(action);
-        intentUpdate.addCategory(Intent.CATEGORY_DEFAULT);
-        intentUpdate.putExtra(MobiComKitConstants.MESSAGE_JSON_INTENT, GsonUtils.getJsonFromObject(message, Message.class));
-        sendBroadcast(context, intentUpdate);
+            Utils.printLog(context, TAG, "Sending message update broadcast for " + action + ", " + message.getKeyString());
+            Intent intentUpdate = new Intent();
+            intentUpdate.setAction(action);
+            intentUpdate.addCategory(Intent.CATEGORY_DEFAULT);
+            intentUpdate.putExtra(MobiComKitConstants.MESSAGE_JSON_INTENT, GsonUtils.getJsonFromObject(message, Message.class));
+            sendBroadcast(context, intentUpdate);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void sendMessageDeleteBroadcast(Context context, String action, String keyString, String contactNumbers) {
-        Utils.printLog(context, TAG, "Sending message delete broadcast for " + action);
-        Intent intentDelete = new Intent();
-        intentDelete.setAction(action);
-        intentDelete.putExtra("keyString", keyString);
-        intentDelete.putExtra("contactNumbers", contactNumbers);
-        intentDelete.addCategory(Intent.CATEGORY_DEFAULT);
-        sendBroadcast(context, intentDelete);
+        try {
+            Utils.printLog(context, TAG, "Sending message delete broadcast for " + action);
+            Intent intentDelete = new Intent();
+            intentDelete.setAction(action);
+            intentDelete.putExtra("keyString", keyString);
+            intentDelete.putExtra("contactNumbers", contactNumbers);
+            intentDelete.addCategory(Intent.CATEGORY_DEFAULT);
+            sendBroadcast(context, intentDelete);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void sendConversationDeleteBroadcast(Context context, String action, String contactNumber, Integer channelKey, String response) {
-        Utils.printLog(context, TAG, "Sending conversation delete broadcast for " + action);
-        Intent intentDelete = new Intent();
-        intentDelete.setAction(action);
-        intentDelete.putExtra("channelKey", channelKey);
-        intentDelete.putExtra("contactNumber", contactNumber);
-        intentDelete.putExtra("response", response);
-        intentDelete.addCategory(Intent.CATEGORY_DEFAULT);
-        sendBroadcast(context, intentDelete);
+        try {
+            Utils.printLog(context, TAG, "Sending conversation delete broadcast for " + action);
+            Intent intentDelete = new Intent();
+            intentDelete.setAction(action);
+            intentDelete.putExtra("channelKey", channelKey);
+            intentDelete.putExtra("contactNumber", contactNumber);
+            intentDelete.putExtra("response", response);
+            intentDelete.addCategory(Intent.CATEGORY_DEFAULT);
+            sendBroadcast(context, intentDelete);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
     public static void sendNotificationBroadcast(Context context, Message message, int index) {
-        if (message != null) {
+        try {
+            if (message != null) {
 
-            if (message.getMetadata() != null && message.getMetadata().containsKey("NO_ALERT") && "true".equals(message.getMetadata().get("NO_ALERT"))) {
-                return;
+                if (message.getMetadata() != null && message.getMetadata().containsKey("NO_ALERT") && "true".equals(message.getMetadata().get("NO_ALERT"))) {
+                    return;
+                }
+
+                int notificationId = Utils.getLauncherIcon(context.getApplicationContext());
+                final NotificationService notificationService =
+                        new NotificationService(notificationId, context, 0, 0, 0);
+
+                if (MobiComUserPreference.getInstance(context).isLoggedIn()) {
+                    Channel channel = ChannelService.getInstance(context).getChannelInfo(message.getGroupId());
+                    Contact contact = null;
+                    if (message.getConversationId() != null) {
+                        ConversationService.getInstance(context).getConversation(message.getConversationId());
+                    }
+                    if (message.getGroupId() == null) {
+                        contact = new AppContactService(context).getContactById(message.getContactIds());
+                    }
+                    if (ApplozicClient.getInstance(context).isNotificationStacking()) {
+                        notificationService.notifyUser(contact, channel, message, index);
+                    } else {
+                        notificationService.notifyUserForNormalMessage(contact, channel, message, index);
+                    }
+                }
             }
-
-            int notificationId = Utils.getLauncherIcon(context.getApplicationContext());
-            final NotificationService notificationService =
-                    new NotificationService(notificationId, context, 0, 0, 0);
-
-            if (MobiComUserPreference.getInstance(context).isLoggedIn()) {
-                Channel channel = ChannelService.getInstance(context).getChannelInfo(message.getGroupId());
-                Contact contact = null;
-                if (message.getConversationId() != null) {
-                    ConversationService.getInstance(context).getConversation(message.getConversationId());
-                }
-                if (message.getGroupId() == null) {
-                    contact = new AppContactService(context).getContactById(message.getContactIds());
-                }
-                if (ApplozicClient.getInstance(context).isNotificationStacking()) {
-                    notificationService.notifyUser(contact, channel, message, index);
-                } else {
-                    notificationService.notifyUserForNormalMessage(contact, channel, message, index);
-                }
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
 
     public static void sendUpdateLastSeenAtTimeBroadcast(Context context, String action, String contactId) {
-        Utils.printLog(context, TAG, "Sending lastSeenAt broadcast....");
-        Intent intent = new Intent();
-        intent.setAction(action);
-        intent.putExtra("contactId", contactId);
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        sendBroadcast(context, intent);
+        try {
+            Utils.printLog(context, TAG, "Sending lastSeenAt broadcast....");
+            Intent intent = new Intent();
+            intent.setAction(action);
+            intent.putExtra("contactId", contactId);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            sendBroadcast(context, intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void sendUpdateTypingBroadcast(Context context, String action, String applicationId, String userId, String isTyping) {
-        Utils.printLog(context, TAG, "Sending typing Broadcast.......");
-        Intent intentTyping = new Intent();
-        intentTyping.setAction(action);
-        intentTyping.putExtra("applicationId", applicationId);
-        intentTyping.putExtra("userId", userId);
-        intentTyping.putExtra("isTyping", isTyping);
-        intentTyping.addCategory(Intent.CATEGORY_DEFAULT);
-        sendBroadcast(context, intentTyping);
+        try {
+            Utils.printLog(context, TAG, "Sending typing Broadcast.......");
+            Intent intentTyping = new Intent();
+            intentTyping.setAction(action);
+            intentTyping.putExtra("applicationId", applicationId);
+            intentTyping.putExtra("userId", userId);
+            intentTyping.putExtra("isTyping", isTyping);
+            intentTyping.addCategory(Intent.CATEGORY_DEFAULT);
+            sendBroadcast(context, intentTyping);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
     public static void sendUpdate(Context context, boolean isMetadataUpdate, String action) {
-        Utils.printLog(context, TAG, action);
-        Intent intent = new Intent();
-        intent.setAction(action);
-        intent.putExtra("isMetadataUpdate", isMetadataUpdate);
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        sendBroadcast(context, intent);
+        try {
+            Utils.printLog(context, TAG, action);
+            Intent intent = new Intent();
+            intent.setAction(action);
+            intent.putExtra("isMetadataUpdate", isMetadataUpdate);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            sendBroadcast(context, intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void sendUpdate(Context context, String action) {
-        sendUpdate(context, false, action);
+        try {
+            sendUpdate(context, false, action);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void updateMessageMetadata(Context context, String messageKey, String action) {
-        Utils.printLog(context, TAG, "Sending Message Metadata Update Broadcast for message key : " + messageKey);
-        Intent intent = new Intent();
-        intent.setAction(action);
-        intent.putExtra("keyString", messageKey);
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        sendBroadcast(context, intent);
+        try {
+            Utils.printLog(context, TAG, "Sending Message Metadata Update Broadcast for message key : " + messageKey);
+            Intent intent = new Intent();
+            intent.setAction(action);
+            intent.putExtra("keyString", messageKey);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            sendBroadcast(context, intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
     public static void sendConversationReadBroadcast(Context context, String action, String currentId, boolean isGroup) {
-        Utils.printLog(context, TAG, "Sending  Broadcast for conversation read ......");
-        Intent intent = new Intent();
-        intent.setAction(action);
-        intent.putExtra("currentId", currentId);
-        intent.putExtra("isGroup", isGroup);
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        sendBroadcast(context, intent);
+        try {
+            Utils.printLog(context, TAG, "Sending  Broadcast for conversation read ......");
+            Intent intent = new Intent();
+            intent.setAction(action);
+            intent.putExtra("currentId", currentId);
+            intent.putExtra("isGroup", isGroup);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            sendBroadcast(context, intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void sendMuteUserBroadcast(Context context, String action, boolean mute, String userId) {
-        Utils.printLog(context, TAG, "Sending Mute user Broadcast for user : " + userId + ", mute : " + mute);
-        Intent intent = new Intent();
-        intent.setAction(action);
-        intent.putExtra("mute", mute);
-        intent.putExtra("userId", userId);
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        sendBroadcast(context, intent);
+        try {
+            Utils.printLog(context, TAG, "Sending Mute user Broadcast for user : " + userId + ", mute : " + mute);
+            Intent intent = new Intent();
+            intent.setAction(action);
+            intent.putExtra("mute", mute);
+            intent.putExtra("userId", userId);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            sendBroadcast(context, intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void sendUpdateUserDetailBroadcast(Context context, String action, String contactId) {
-        Utils.printLog(context, TAG, "Sending profileImage update....");
-        Intent intent = new Intent();
-        intent.setAction(action);
-        intent.putExtra("contactId", contactId);
-        sendBroadcast(context, intent);
+        try {
+            Utils.printLog(context, TAG, "Sending profileImage update....");
+            Intent intent = new Intent();
+            intent.setAction(action);
+            intent.putExtra("contactId", contactId);
+            sendBroadcast(context, intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void sendUpdateGroupInfoBroadcast(Context context, String action) {
-        Intent intent = new Intent();
-        intent.setAction(action);
-        sendBroadcast(context, intent);
+        try {
+            Intent intent = new Intent();
+            intent.setAction(action);
+            sendBroadcast(context, intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static IntentFilter getIntentFilter() {

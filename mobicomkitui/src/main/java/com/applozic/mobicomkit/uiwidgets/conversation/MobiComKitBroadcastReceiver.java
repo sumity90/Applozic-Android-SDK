@@ -13,6 +13,7 @@ import com.applozic.mobicomkit.broadcast.BroadcastService;
 import com.applozic.mobicomkit.contact.AppContactService;
 import com.applozic.mobicomkit.contact.BaseContactService;
 import com.applozic.mobicomkit.uiwidgets.R;
+import com.applozic.mobicomkit.uiwidgets.conversation.fragment.MobiComQuickConversationFragment;
 import com.applozic.mobicomkit.uiwidgets.instruction.InstructionUtil;
 import com.applozic.mobicommons.commons.core.utils.Utils;
 import com.applozic.mobicommons.json.GsonUtils;
@@ -34,6 +35,16 @@ public class MobiComKitBroadcastReceiver extends BroadcastReceiver {
         this.baseContactService = new AppContactService(fragmentActivity);
         this.hideActionMessages = ApplozicClient.getInstance(fragmentActivity).isActionMessagesHidden();
     }
+
+    public MobiComKitBroadcastReceiver(FragmentActivity fragmentActivity, MobiComQuickConversationFragment mobiComQuickConversationFragment) {
+        try {
+            this.conversationUIService = new ConversationUIService(fragmentActivity,mobiComQuickConversationFragment);
+            this.baseContactService = new AppContactService(fragmentActivity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     public void onReceive(Context context, Intent intent) {

@@ -115,6 +115,7 @@ public class ConversationUIService {
     private Contact contact;
     private NotificationManager notificationManager;
     private boolean isActionMessageHidden;
+    MobiComQuickConversationFragment mobiComQuickConversationFragment;
 
     public ConversationUIService(FragmentActivity fragmentActivity) {
         this.fragmentActivity = fragmentActivity;
@@ -125,7 +126,14 @@ public class ConversationUIService {
         isActionMessageHidden = ApplozicClient.getInstance(fragmentActivity).isActionMessagesHidden();
     }
 
-    public MobiComQuickConversationFragment getQuickConversationFragment() {
+    public ConversationUIService(FragmentActivity fragmentActivity,MobiComQuickConversationFragment mobiComQuickConversationFragment) {     this.fragmentActivity = fragmentActivity;
+        this.baseContactService = new AppContactService(fragmentActivity);
+        this.userPreference = MobiComUserPreference.getInstance(fragmentActivity);
+        this.notificationManager  = (NotificationManager) fragmentActivity.getSystemService(Context.NOTIFICATION_SERVICE);
+        this.mobiComQuickConversationFragment = mobiComQuickConversationFragment;
+    }
+
+ /*   public MobiComQuickConversationFragment getQuickConversationFragment() {
 
         MobiComQuickConversationFragment quickConversationFragment = (MobiComQuickConversationFragment) UIService.getFragmentByTag(fragmentActivity, QUICK_CONVERSATION_FRAGMENT);
 
@@ -134,6 +142,10 @@ public class ConversationUIService {
             ConversationActivity.addFragment(fragmentActivity, quickConversationFragment, QUICK_CONVERSATION_FRAGMENT);
         }
         return quickConversationFragment;
+    }*/
+
+    public MobiComQuickConversationFragment getQuickConversationFragment() {
+        return this.mobiComQuickConversationFragment;
     }
 
     public ConversationFragment getConversationFragment() {
@@ -425,7 +437,7 @@ public class ConversationUIService {
         }
     }
 
-    public void addMessage(Message message) {
+/*    public void addMessage(Message message) {
         if (message.isUpdateMessage() || !message.getHidden()) {
             if (!BroadcastService.isQuick()) {
                 return;
@@ -437,6 +449,22 @@ public class ConversationUIService {
                     fragment.refreshView();
                 } else {
                     fragment.addMessage(message);
+                }
+            }
+        }
+    }*/
+
+    public void addMessage(Message message) {
+        if (message.isUpdateMessage()) {
+            if (!BroadcastService.isQuick()) {
+                return;
+            }
+
+            if (mobiComQuickConversationFragment != null) {
+                if(message.isHidden()){
+                    mobiComQuickConversationFragment.refreshView();
+                }else {
+                    mobiComQuickConversationFragment.addMessage(message);
                 }
             }
         }
